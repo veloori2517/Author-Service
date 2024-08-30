@@ -5,7 +5,7 @@ pipeline {
         GIT_URL = 'https://github.com/veloori2517/Author-Service.git'
         DOCKER_IMAGE = 'vamsi5563/author-service'
         DOCKER_CREDENTIALS_ID = 'docker-credentials-id'
-        DOCKER_REGISTRY_URL = 'https://index.docker.io/v1/'
+        DOCKER_REGISTRY_URL = 'https://index.docker.io/'
         GIT_CREDENTIALS_ID = 'github_credentials_id'
         BUILD_ID = "${env.BUILD_ID}"
     }
