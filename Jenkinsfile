@@ -41,25 +41,28 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    def imageName = "${DOCKER_IMAGE}:${BUILD_ID}"
+                   def imageName = "${DOCKER_IMAGE}:${BUILD_ID}"
+                               echo "Pushing Docker image: ${imageName}"
 
-                    // Login to Docker registry
-                    withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        sh """
-                        echo ${DOCKER_PASSWORD} | docker login ${DOCKER_REGISTRY_URL} -u ${DOCKER_USERNAME} --password-stdin
-                        """
+                               // Login to Docker registry
+                               withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                                   sh """
+                                   echo ${DOCKER_PASSWORD} | docker login ${DOCKER_REGISTRY_URL} -u ${DOCKER_USERNAME} --password-stdin
+                                   """
 
-                        // Check login status
-                        def loginStatus = sh(script: 'docker info', returnStatus: true)
-                        if (loginStatus != 0) {
-                            error 'Docker login failed, aborting the pipeline.'
-                        }
+                                   // Check login status
+                                   def loginStatus = sh(script: 'docker info', returnStatus: true)
+                                   if (loginStatus != 0) {
+                                       error 'Docker login failed, aborting the pipeline.'
+                                   }
 
-                        // Push Docker Image
-                        docker.withRegistry(DOCKER_REGISTRY_URL, DOCKER_CREDENTIALS_ID) {
-                            sh "docker push ${imageName}"
-                        }
-                    }
+                                   // Push Docker Image
+                                   def pushStatus = sh(script: "docker push ${imageName}", returnStatus: true)
+                                   if (pushStatus != 0) {
+                                       error 'Docker push failed, aborting the pipeline.'
+                                   }
+                               }
+
                 }
             }
         }
