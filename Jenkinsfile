@@ -1,22 +1,19 @@
-pipeline{
+pipeline {
     agent any
 
     environment {
-
         GIT_URL = 'https://github.com/veloori2517/Author-Service.git'
         DOCKER_IMAGE = 'vamsi5563/author-service'
         DOCKER_CREDENTIALS_ID = 'docker-credentials-id'
-        DOCKER_REGISTRY_URL= 'https://index.docker.io/v1/'
+        DOCKER_REGISTRY_URL = 'https://index.docker.io/'
         GIT_CREDENTIALS_ID = 'github_credentials_id'
         BUILD_ID = "${env.BUILD_ID}"
-
     }
 
-    stages{
-        stage('Checkout'){
-
+    stages {
+        stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/veloori2517/Author-Service.git', credentialsId: 'github_credentials_id'
+                git branch: 'main', url: GIT_URL, credentialsId: GIT_CREDENTIALS_ID
             }
         }
 
@@ -27,7 +24,7 @@ pipeline{
         }
 
         stage('Test') {
-            steps{
+            steps {
                 sh 'mvn test'
             }
         }
@@ -45,8 +42,9 @@ pipeline{
             steps {
                 script {
                     def imageName = "${DOCKER_IMAGE}:${BUILD_ID}"
-                                       docker.withRegistry('https://index.docker.io/v1/', "${DOCKER_CREDENTIALS_ID}") {
-                                           sh "docker push ${imageName}"
+                    docker.withRegistry(DOCKER_REGISTRY_URL, DOCKER_CREDENTIALS_ID) {
+                        sh "docker push ${imageName}"
+                    }
                 }
             }
         }
@@ -54,17 +52,16 @@ pipeline{
         stage('Deploy') {
             steps {
                 script {
-                     def imageName = "${DOCKER_IMAGE}:${BUILD_ID}"
-                                        // Check and remove existing container
-                                        sh """
-                                        docker stop author-service_dev || true
-                                        docker rm author-service_dev || true
-                                        docker run -d -p 9090:9090 --name author-service_dev ${imageName}
-                                        """
+                    def imageName = "${DOCKER_IMAGE}:${BUILD_ID}"
+                    // Check and remove existing container
+                    sh """
+                    docker stop author-service_dev || true
+                    docker rm author-service_dev || true
+                    docker run -d -p 9090:9090 --name author-service_dev ${imageName}
+                    """
                 }
             }
         }
-
     }
 
     post {
