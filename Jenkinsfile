@@ -43,20 +43,22 @@ pipeline {
                 script {
                     def imageName = "${DOCKER_IMAGE}:${BUILD_ID}"
 
-                    // Log in to Docker Registry and check for success
-                    def loginStatus = sh(script: """
-                        echo ${DOCKER_CREDENTIALS_ID} | docker login ${DOCKER_REGISTRY_URL} -u \$(echo ${DOCKER_CREDENTIALS_ID} | cut -d':' -f1) -p \$(echo ${DOCKER_CREDENTIALS_ID} | cut -d':' -f2) && echo 'Login successful' || echo 'Login failed'
-                    """, returnStdout: true).trim()
+                    // Login to Docker registry
+                    withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh """
+                        echo ${DOCKER_PASSWORD} | docker login ${DOCKER_REGISTRY_URL} -u ${DOCKER_USERNAME} --password-stdin
+                        """
 
-                    echo "Docker Login Status: ${loginStatus}"
+                        // Check login status
+                        def loginStatus = sh(script: 'docker info', returnStatus: true)
+                        if (loginStatus != 0) {
+                            error 'Docker login failed, aborting the pipeline.'
+                        }
 
-                    if (loginStatus.contains('Login failed')) {
-                        error 'Docker login failed, aborting the pipeline.'
-                    }
-
-                    // Push Docker Image
-                    docker.withRegistry(DOCKER_REGISTRY_URL, DOCKER_CREDENTIALS_ID) {
-                        sh "docker push ${imageName}"
+                        // Push Docker Image
+                        docker.withRegistry(DOCKER_REGISTRY_URL, DOCKER_CREDENTIALS_ID) {
+                            sh "docker push ${imageName}"
+                        }
                     }
                 }
             }
