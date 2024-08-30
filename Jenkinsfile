@@ -44,7 +44,9 @@ pipeline {
                     def imageName = "${DOCKER_IMAGE}:${BUILD_ID}"
 
                     // Log in to Docker Registry and check for success
-                    def loginStatus = sh(script: "echo ${DOCKER_CREDENTIALS_ID} | docker login ${DOCKER_REGISTRY_URL} -u $(echo ${DOCKER_CREDENTIALS_ID} | cut -d':' -f1) -p $(echo ${DOCKER_CREDENTIALS_ID} | cut -d':' -f2) && echo 'Login successful' || echo 'Login failed'", returnStdout: true).trim()
+                    def loginStatus = sh(script: """
+                        echo ${DOCKER_CREDENTIALS_ID} | docker login ${DOCKER_REGISTRY_URL} -u \$(echo ${DOCKER_CREDENTIALS_ID} | cut -d':' -f1) -p \$(echo ${DOCKER_CREDENTIALS_ID} | cut -d':' -f2) && echo 'Login successful' || echo 'Login failed'
+                    """, returnStdout: true).trim()
 
                     echo "Docker Login Status: ${loginStatus}"
 
