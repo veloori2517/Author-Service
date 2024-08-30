@@ -16,7 +16,7 @@ pipeline{
         stage('Checkout'){
 
             steps {
-                git url: "${GIT_URL}", credentialsId: "${GIT_CREDENTIALS_ID}"
+                git branch: 'main', url: 'https://github.com/veloori2517/Author-Service.git', credentialsId: 'github_credentials_id'
             }
         }
 
