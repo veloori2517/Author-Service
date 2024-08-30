@@ -76,7 +76,7 @@ pipeline {
                     sh """
                     docker stop author-service_dev || true
                     docker rm author-service_dev || true
-                    docker run -d -p 9090:9090 --name author-service_dev ${imageName}
+                    docker run -d -p 9094:9090 --name author-service_dev ${imageName}
                     """
                 }
             }
